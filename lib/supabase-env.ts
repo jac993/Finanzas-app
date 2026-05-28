@@ -37,6 +37,16 @@ export function getSupabasePublicConfig(): {
     };
   }
 
+  if (!url.includes(".supabase.co")) {
+    return {
+      url,
+      anonKey,
+      isConfigured: false,
+      configError:
+        "NEXT_PUBLIC_SUPABASE_URL está mal configurada en Vercel. Debe ser la URL de Supabase (ej: https://tu-proyecto.supabase.co), NO la URL de Vercel.",
+    };
+  }
+
   return { url, anonKey, isConfigured: true, configError: null };
 }
 
