@@ -22,9 +22,9 @@ export default function LoginPage() {
   useEffect(() => {
     let isMounted = true;
 
-    const { isConfigured } = getSupabasePublicConfig();
+    const { isConfigured, configError } = getSupabasePublicConfig();
     if (!isConfigured) {
-      setError(SUPABASE_ENV_ERROR);
+      setError(configError ?? SUPABASE_ENV_ERROR);
       return;
     }
 
@@ -53,6 +53,13 @@ export default function LoginPage() {
     setError(null);
     setSubmitting(true);
 
+    const { isConfigured, configError } = getSupabasePublicConfig();
+    if (!isConfigured) {
+      setError(configError ?? SUPABASE_ENV_ERROR);
+      setSubmitting(false);
+      return;
+    }
+
     try {
       const { error: signInError } = await supabase.auth.signInWithPassword({
         email: form.email,
@@ -64,6 +71,10 @@ export default function LoginPage() {
       }
       router.refresh();
       router.replace(nextPath);
+    } catch {
+      setError(
+        "No se pudo conectar con Supabase (Failed to fetch). Revisa que NEXT_PUBLIC_SUPABASE_URL esté en Vercel y haz Redeploy sin caché.",
+      );
     } finally {
       setSubmitting(false);
     }
