@@ -1,8 +1,14 @@
 "use client";
 
-import { useMemo, useRef, useState, useTransition } from "react";import type { Account, Category, CsvTransactionRow, TransactionType } from "@/lib/types";
+import { useMemo, useRef, useState, useTransition } from "react";
+import type { Account, Category, CsvTransactionRow, TransactionType } from "@/lib/types";
 import { importCsvTransactionsAction } from "../actions";
-import { buildCsvRows, parseCsvFile, TRANSACTION_TYPE_OPTIONS } from "../utils";
+import {
+  buildCsvRows,
+  IMPORT_FILE_ACCEPT,
+  parseImportFile,
+  TRANSACTION_TYPE_OPTIONS,
+} from "../utils";
 
 type ImportCsvModalProps = {
   accounts: Account[];
@@ -42,9 +48,9 @@ export function ImportCsvModal({ accounts, categories, onClose, onSuccess }: Imp
     setInfo(null);
 
     try {
-      const parsed = await parseCsvFile(file);
+      const parsed = await parseImportFile(file);
       if (parsed.headers.length === 0 || parsed.rows.length === 0) {
-        setError("El archivo CSV no contiene datos válidos.");
+        setError("El archivo no contiene datos válidos para importar.");
         return;
       }
 
@@ -56,7 +62,7 @@ export function ImportCsvModal({ accounts, categories, onClose, onSuccess }: Imp
         description: parsed.headers[2] ?? parsed.headers[0] ?? "",
       });
     } catch (err) {
-      setError(err instanceof Error ? err.message : "No se pudo leer el archivo CSV.");
+      setError(err instanceof Error ? err.message : "No se pudo leer el archivo.");
     }
   }
 
@@ -114,9 +120,9 @@ export function ImportCsvModal({ accounts, categories, onClose, onSuccess }: Imp
       <div className="max-h-[90vh] w-full max-w-3xl overflow-y-auto rounded-2xl border border-zinc-200 bg-white p-6 shadow-xl dark:border-zinc-800 dark:bg-zinc-950">
         <div className="mb-4 flex items-start justify-between gap-4">
           <div>
-            <h2 className="text-lg font-semibold tracking-tight">Importar CSV</h2>
+            <h2 className="text-lg font-semibold tracking-tight">Importar transacciones</h2>
             <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
-              Sube un archivo, revisa la vista previa y confirma la importación.
+              Sube un archivo CSV o Excel del banco, revisa la vista previa y confirma la importación.
             </p>
           </div>
           <button
@@ -153,10 +159,10 @@ export function ImportCsvModal({ accounts, categories, onClose, onSuccess }: Imp
           ].join(" ")}
         >
           <p className="text-sm font-medium text-zinc-800 dark:text-zinc-200">
-            Arrastra tu archivo CSV aquí
+            Arrastra tu archivo CSV o Excel aquí
           </p>
           <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
-            o haz clic para seleccionarlo desde tu computador
+            Formatos: .csv, .xlsx, .xls — o haz clic para seleccionarlo
           </p>
           <button
             type="button"
@@ -166,15 +172,15 @@ export function ImportCsvModal({ accounts, categories, onClose, onSuccess }: Imp
             }}
             className="mt-4 inline-flex items-center justify-center rounded-lg border border-zinc-200 bg-white px-4 py-2 text-sm font-medium text-zinc-900 hover:bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-50 dark:hover:bg-zinc-900"
           >
-            Seleccionar archivo CSV
+            Seleccionar archivo
           </button>
           <input
             ref={fileInputRef}
             type="file"
-            accept=".csv,text/csv"
+            accept={IMPORT_FILE_ACCEPT}
             onChange={handleFileInput}
             className="sr-only"
-            aria-label="Seleccionar archivo CSV"
+            aria-label="Seleccionar archivo CSV o Excel"
           />
         </div>
         {headers.length > 0 ? (
