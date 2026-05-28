@@ -1,6 +1,7 @@
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { DEFAULT_CATEGORIES } from "@/lib/category-constants";
 import { createCategory, getAccounts, getCategories } from "@/lib/queries";
+import { getTelegramLinkStatus } from "@/lib/telegram-link";
 import type {
   Account,
   AccountInput,
@@ -39,13 +40,14 @@ export async function getUserProfile(): Promise<UserProfile> {
 }
 
 export async function getSettingsPageData(): Promise<SettingsPageData> {
-  const [profile, accounts, categories] = await Promise.all([
+  const [profile, accounts, categories, telegram] = await Promise.all([
     getUserProfile(),
     getAccounts(),
     getCategories(),
+    getTelegramLinkStatus(),
   ]);
 
-  return { profile, accounts, categories };
+  return { profile, accounts, categories, telegram };
 }
 
 export async function updateUserProfile(name: string): Promise<void> {

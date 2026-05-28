@@ -5,6 +5,7 @@ import type { SettingsPageData } from "@/lib/types";
 import { AccountsSection } from "./accounts-section";
 import { CategoriesSection } from "./categories-section";
 import { ProfileSection } from "./profile-section";
+import { TelegramSection } from "./telegram-section";
 
 export function SettingsView({ data }: { data: SettingsPageData }) {
   const router = useRouter();
@@ -25,6 +26,7 @@ export function SettingsView({ data }: { data: SettingsPageData }) {
       <ProfileSection profile={data.profile} />
       <AccountsSection accounts={data.accounts} onChanged={handleChanged} />
       <CategoriesSection categories={data.categories} onChanged={handleChanged} />
+      <TelegramSection status={data.telegram} onChanged={handleChanged} />
     </div>
   );
 }

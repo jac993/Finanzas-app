@@ -120,10 +120,17 @@ export type UserProfile = {
   name: string | null;
 };
 
+export type TelegramLinkStatus = {
+  linked: boolean;
+  linkCode: string | null;
+  chatId: string | null;
+};
+
 export type SettingsPageData = {
   profile: UserProfile;
   accounts: Account[];
   categories: Category[];
+  telegram: TelegramLinkStatus;
 };
 
 export type TransactionFilters = {
