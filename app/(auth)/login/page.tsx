@@ -48,6 +48,7 @@ export default function LoginPage() {
         setError(signInError.message);
         return;
       }
+      router.refresh();
       router.replace(nextPath);
     } finally {
       setSubmitting(false);

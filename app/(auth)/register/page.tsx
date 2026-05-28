@@ -51,6 +51,7 @@ export default function RegisterPage() {
         return;
       }
 
+      router.refresh();
       router.replace("/dashboard");
     } finally {
       setSubmitting(false);
