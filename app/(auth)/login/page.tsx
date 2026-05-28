@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
+import { getSupabasePublicConfig, SUPABASE_ENV_ERROR } from "@/lib/supabase-env";
 import { supabase } from "@/lib/supabase";
 
 type FormState = {
@@ -21,14 +22,27 @@ export default function LoginPage() {
   useEffect(() => {
     let isMounted = true;
 
+    const { isConfigured } = getSupabasePublicConfig();
+    if (!isConfigured) {
+      setError(SUPABASE_ENV_ERROR);
+      return;
+    }
+
     // Evitamos useSearchParams (requiere Suspense en build).
     const nextParam = new URLSearchParams(window.location.search).get("next");
     if (nextParam) setNextPath(nextParam);
 
-    supabase.auth.getSession().then(({ data }) => {
-      if (!isMounted) return;
-      if (data.session) router.replace("/dashboard");
-    });
+    supabase.auth
+      .getSession()
+      .then(({ data }) => {
+        if (!isMounted) return;
+        if (data.session) router.replace("/dashboard");
+      })
+      .catch(() => {
+        if (!isMounted) return;
+        setError("No se pudo conectar con Supabase. Intenta de nuevo en unos minutos.");
+      });
+
     return () => {
       isMounted = false;
     };

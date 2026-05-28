@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
+import { getSupabasePublicConfig, SUPABASE_ENV_ERROR } from "@/lib/supabase-env";
 import { supabase } from "@/lib/supabase";
 
 type FormState = {
@@ -20,10 +21,24 @@ export default function RegisterPage() {
 
   useEffect(() => {
     let isMounted = true;
-    supabase.auth.getSession().then(({ data }) => {
-      if (!isMounted) return;
-      if (data.session) router.replace("/dashboard");
-    });
+
+    const { isConfigured } = getSupabasePublicConfig();
+    if (!isConfigured) {
+      setError(SUPABASE_ENV_ERROR);
+      return;
+    }
+
+    supabase.auth
+      .getSession()
+      .then(({ data }) => {
+        if (!isMounted) return;
+        if (data.session) router.replace("/dashboard");
+      })
+      .catch(() => {
+        if (!isMounted) return;
+        setError("No se pudo conectar con Supabase. Intenta de nuevo en unos minutos.");
+      });
+
     return () => {
       isMounted = false;
     };

@@ -1,22 +1,17 @@
 import { createBrowserClient } from "@supabase/ssr";
 import type { SupabaseClient } from "@supabase/supabase-js";
+import { getSupabasePublicConfig } from "@/lib/supabase-env";
 
 let browserClient: SupabaseClient | undefined;
 
-function requiredEnv(name: "NEXT_PUBLIC_SUPABASE_URL" | "NEXT_PUBLIC_SUPABASE_ANON_KEY"): string {
-  const value = process.env[name];
-  if (!value) {
-    throw new Error(`Falta la variable de entorno ${name}. Configúrala en .env.local o en Vercel.`);
-  }
-  return value;
-}
-
 export function getSupabaseBrowserClient(): SupabaseClient {
+  const { url, anonKey, isConfigured } = getSupabasePublicConfig();
+  if (!isConfigured || !url || !anonKey) {
+    throw new Error("Supabase no está configurado en este entorno.");
+  }
+
   if (!browserClient) {
-    browserClient = createBrowserClient(
-      requiredEnv("NEXT_PUBLIC_SUPABASE_URL"),
-      requiredEnv("NEXT_PUBLIC_SUPABASE_ANON_KEY"),
-    );
+    browserClient = createBrowserClient(url, anonKey);
   }
   return browserClient;
 }
