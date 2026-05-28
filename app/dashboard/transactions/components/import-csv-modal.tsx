@@ -1,7 +1,6 @@
 "use client";
 
-import { useMemo, useState, useTransition } from "react";
-import type { Account, Category, CsvTransactionRow, TransactionType } from "@/lib/types";
+import { useMemo, useRef, useState, useTransition } from "react";import type { Account, Category, CsvTransactionRow, TransactionType } from "@/lib/types";
 import { importCsvTransactionsAction } from "../actions";
 import { buildCsvRows, parseCsvFile, TRANSACTION_TYPE_OPTIONS } from "../utils";
 
@@ -30,7 +29,7 @@ export function ImportCsvModal({ accounts, categories, onClose, onSuccess }: Imp
   const [categoryId, setCategoryId] = useState("");
   const [type, setType] = useState<TransactionType>("expense");
   const [isDragging, setIsDragging] = useState(false);
-
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const previewRows = useMemo(() => rows.slice(0, 5), [rows]);
 
   const parsedPreview = useMemo(() => {
@@ -64,8 +63,12 @@ export function ImportCsvModal({ accounts, categories, onClose, onSuccess }: Imp
   function handleFileInput(event: React.ChangeEvent<HTMLInputElement>) {
     const file = event.target.files?.[0];
     if (file) void loadFile(file);
+    event.target.value = "";
   }
 
+  function openFilePicker() {
+    fileInputRef.current?.click();
+  }
   function handleDrop(event: React.DragEvent<HTMLDivElement>) {
     event.preventDefault();
     setIsDragging(false);
@@ -127,6 +130,15 @@ export function ImportCsvModal({ accounts, categories, onClose, onSuccess }: Imp
         </div>
 
         <div
+          role="button"
+          tabIndex={0}
+          onClick={openFilePicker}
+          onKeyDown={(event) => {
+            if (event.key === "Enter" || event.key === " ") {
+              event.preventDefault();
+              openFilePicker();
+            }
+          }}
           onDragOver={(event) => {
             event.preventDefault();
             setIsDragging(true);
@@ -134,23 +146,37 @@ export function ImportCsvModal({ accounts, categories, onClose, onSuccess }: Imp
           onDragLeave={() => setIsDragging(false)}
           onDrop={handleDrop}
           className={[
-            "rounded-xl border border-dashed p-6 text-center",
+            "cursor-pointer rounded-xl border border-dashed p-6 text-center transition-colors",
             isDragging
               ? "border-zinc-900 bg-zinc-50 dark:border-zinc-200 dark:bg-zinc-900/40"
-              : "border-zinc-300 dark:border-zinc-700",
+              : "border-zinc-300 hover:border-zinc-400 hover:bg-zinc-50 dark:border-zinc-700 dark:hover:border-zinc-500 dark:hover:bg-zinc-900/30",
           ].join(" ")}
         >
-          <p className="text-sm text-zinc-600 dark:text-zinc-400">
-            Arrastra tu archivo CSV aquí o selecciónalo manualmente.
+          <p className="text-sm font-medium text-zinc-800 dark:text-zinc-200">
+            Arrastra tu archivo CSV aquí
           </p>
+          <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
+            o haz clic para seleccionarlo desde tu computador
+          </p>
+          <button
+            type="button"
+            onClick={(event) => {
+              event.stopPropagation();
+              openFilePicker();
+            }}
+            className="mt-4 inline-flex items-center justify-center rounded-lg border border-zinc-200 bg-white px-4 py-2 text-sm font-medium text-zinc-900 hover:bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-50 dark:hover:bg-zinc-900"
+          >
+            Seleccionar archivo CSV
+          </button>
           <input
+            ref={fileInputRef}
             type="file"
             accept=".csv,text/csv"
             onChange={handleFileInput}
-            className="mt-4 block w-full text-sm"
+            className="sr-only"
+            aria-label="Seleccionar archivo CSV"
           />
         </div>
-
         {headers.length > 0 ? (
           <div className="mt-6 space-y-4">
             <div className="grid gap-3 md:grid-cols-3">
